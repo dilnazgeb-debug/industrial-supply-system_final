@@ -1,4 +1,4 @@
-# Industrial Supply System (Equipment Auditing + Demand Forecasting)
+# Industrial Supply System
 
 This repository contains two related parts:
 
@@ -222,5 +222,6 @@ These scripts are used during development to verify component functionality in i
   - If `DATABASE_URL` is empty → JSON demo mode
   - If `DATABASE_URL` is set → PostgreSQL mode
 - **Pre-trained ML artifacts** must exist in `models/` for ML predictions to work.
+- The web interface/simplified demo version hosted via GitHub Pages to illustrate system functionality is available on : https://dilnazgeb-debug.github.io/equipment-audit-ui-demo/
 
 ---
