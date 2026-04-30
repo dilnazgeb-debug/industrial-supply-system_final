@@ -224,4 +224,18 @@ These scripts are used during development to verify component functionality in i
 - **Pre-trained ML artifacts** must exist in `models/` for ML predictions to work.
 - The web interface/simplified demo version hosted via GitHub Pages to illustrate system functionality is available on : https://dilnazgeb-debug.github.io/equipment-audit-ui-demo/
 
+  
+- ## ⚙️ Environment Setup
+
+This project uses external APIs for data processing and forecasting.
+
+To run the project locally, you need to create an API key from Groq:
+
+👉 https://console.groq.com/keys
+
+Then create a `.env` file in the root directory:
+
+
+GROQ_API_KEY=your_api_key_here
+
 ---
