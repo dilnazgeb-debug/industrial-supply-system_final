@@ -198,7 +198,7 @@ The Compose stack is designed to support:
 ### Data / Outputs
 - `data/`
   - `supplier_system.db` — local SQLite DB (if created/used)
-- `outputs/` — generated CSVs and images:
+- `outputs/` — generated CSVs and images from simulated data:
   - `suppliers.csv`, `products.csv`, `contacts.csv`
   - `supplier_products.csv`, `sales_history.csv`, `forecast.csv`
   - chart images: `feature_importance.png`, `predicted_vs_actual.png`, `top_suppliers.png`, etc.
