@@ -8,4 +8,4 @@ spark_master_data/
 *.log
 .history/
 md/
-*.pdf
+*.pdfgroq.env
