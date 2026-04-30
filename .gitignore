@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+venv/
+.DS_Store
+# Не грузим базу данных и огромные логи
+postgres_data/
+spark_master_data/
+*.log
+.history/
+md/
+*.pdf

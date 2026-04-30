@@ -1,0 +1,182 @@
+[
+  {
+    "id": 1,
+    "category": "Compressor",
+    "brand": "Kaishan",
+    "model": "KS-30",
+    "specs": "30 kW, 3-phase, 8 bar, 8000 RPM, Direct drive",
+    "status": "active",
+    "is_discontinued": false
+  },
+  {
+    "id": 2,
+    "category": "Compressor",
+    "brand": "Fusheng",
+    "model": "FS-45",
+    "specs": "45 kW, 3-phase, 10 bar, 7500 RPM, Belt drive",
+    "status": "active",
+    "is_discontinued": false
+  },
+  {
+    "id": 3,
+    "category": "Compressor",
+    "brand": "DENAIR",
+    "model": "DA-75",
+    "specs": "75 kW, 3-phase, 13 bar, 6000 RPM, Screw type",
+    "status": "active",
+    "is_discontinued": false
+  },
+  {
+    "id": 4,
+    "category": "Pump",
+    "brand": "Atlas Copco",
+    "model": "CP-50",
+    "specs": "50 m³/h, 100m head, 37 kW, Centrifugal",
+    "status": "maintenance",
+    "is_discontinued": false
+  },
+  {
+    "id": 5,
+    "category": "Pump",
+    "brand": "Ingersoll Rand",
+    "model": "IR-75",
+    "specs": "75 m³/h, 150m head, 55 kW, Centrifugal",
+    "status": "active",
+    "is_discontinued": false
+  },
+  {
+    "id": 6,
+    "category": "Pump",
+    "brand": "Grundfos",
+    "model": "CR32-3",
+    "specs": "32 m³/h, 80m head, 22 kW, Vertical turbine",
+    "status": "active",
+    "is_discontinued": false
+  },
+  {
+    "id": 7,
+    "category": "Motor",
+    "brand": "Siemens",
+    "model": "1LA7-163-4A",
+    "specs": "22 kW, 4-pole, 1500 RPM, 380V AC, Premium efficiency",
+    "status": "active",
+    "is_discontinued": false
+  },
+  {
+    "id": 8,
+    "category": "Motor",
+    "brand": "ABB",
+    "model": "M3BP180MLB4",
+    "specs": "37 kW, 4-pole, 1500 RPM, 380V AC, Flange mount",
+    "status": "active",
+    "is_discontinued": false
+  },
+  {
+    "id": 9,
+    "category": "Motor",
+    "brand": "WEG",
+    "model": "W22-056M",
+    "specs": "55 kW, 6-pole, 1000 RPM, 380V AC, Energy saver",
+    "status": "active",
+    "is_discontinued": true
+  },
+  {
+    "id": 10,
+    "category": "Filter",
+    "brand": "Bosch",
+    "model": "1.4006P",
+    "specs": "Air filter, 100 µm, Paper cartridge, Max 10 bar",
+    "status": "active",
+    "is_discontinued": false
+  },
+  {
+    "id": 11,
+    "category": "Filter",
+    "brand": "Donaldson",
+    "model": "P181093",
+    "specs": "Air filter, 3 µm, Hydraulic, Max 25 bar",
+    "status": "active",
+    "is_discontinued": false
+  },
+  {
+    "id": 12,
+    "category": "Filter",
+    "brand": "Parker",
+    "model": "HDA4700",
+    "specs": "Cartridge filter, 10 µm, High flow, Max 30 bar",
+    "status": "maintenance",
+    "is_discontinued": false
+  },
+  {
+    "id": 13,
+    "category": "Valve",
+    "brand": "Hydac",
+    "model": "WSM02",
+    "specs": "Directional control valve, 4/3, Spool, NG10, Max 350 bar",
+    "status": "active",
+    "is_discontinued": false
+  },
+  {
+    "id": 14,
+    "category": "Valve",
+    "brand": "Moog",
+    "model": "D633",
+    "specs": "Proportional directional valve, NG10, Max 280 bar",
+    "status": "active",
+    "is_discontinued": true
+  },
+  {
+    "id": 15,
+    "category": "Valve",
+    "brand": "Rexroth",
+    "model": "4WRZ10",
+    "specs": "Proportional pressure relief, NG25, Max 350 bar",
+    "status": "active",
+    "is_discontinued": false
+  },
+  {
+    "id": 16,
+    "category": "Cylinder",
+    "brand": "Bosch Rexroth",
+    "model": "CDT1MS-20-16-40",
+    "specs": "Telescopic cylinder, 20 mm bore, 100 mm stroke, Max 210 bar",
+    "status": "active",
+    "is_discontinued": false
+  },
+  {
+    "id": 17,
+    "category": "Cylinder",
+    "brand": "Parker",
+    "model": "GR2-125",
+    "specs": "Pneumatic cylinder, 125 mm bore, Compact, Max 10 bar",
+    "status": "active",
+    "is_discontinued": false
+  },
+  {
+    "id": 18,
+    "category": "Cylinder",
+    "brand": "Atos",
+    "model": "DHE-0619",
+    "specs": "Proportional pressure control, NG10, Max 350 bar",
+    "status": "active",
+    "is_discontinued": true
+  },
+  {
+    "id": 19,
+    "category": "Pump",
+    "brand": "KSB",
+    "model": "ETABLOC G40-200",
+    "specs": "40 m³/h, 180m head, 30 kW, Submersible",
+    "status": "active",
+    "is_discontinued": false
+  },
+  {
+    "id": 20,
+    "category": "Compressor",
+    "brand": "DENAIR",
+    "model": "DA-15",
+    "specs": "15 kW, 1-phase, 8 bar, 5000 RPM, Portable",
+    "status": "active",
+    "is_discontinued": false
+  }
+]

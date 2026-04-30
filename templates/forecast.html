@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Прогноз спроса - Industrial Supply System{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h1 class="display-5 fw-bold mb-2">
+                        <i class="fas fa-crystal-ball" style="color: #f39c12;"></i> Прогноз спроса
+                    </h1>
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="card-title"><i class="fas fa-list-ol"></i> Записей прогноза</h6>
+                    <div class="display-6 fw-bold text-primary" id="statRows">—</div>
+                    <div class="text-muted small">Всего строк в файле прогноза</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="card-title"><i class="fas fa-calendar"></i> Периодов</h6>
+                    <div class="display-6 fw-bold text-success" id="statPeriods">—</div>
+                    <div class="text-muted small">Уникальных месяцев в прогнозе</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="card-title"><i class="fas fa-boxes"></i> Суммарный прогноз</h6>
+                    <div class="display-6 fw-bold text-warning" id="statQty">—</div>
+                    <div class="text-muted small">Общий объём по всем строкам</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-bottom">
+                    <h6 class="mb-0"><i class="fas fa-chart-line"></i> Прогноз по месяцам</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; min-height: 360px;">
+                        <canvas id="forecastChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <h6 class="mb-0"><i class="fas fa-table"></i> Таблица прогноза</h6>
+                    <span class="badge bg-secondary" id="sourceBadge">Ожидание данных...</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 15%">Год</th>
+                                    <th style="width: 15%">Месяц</th>
+                                    <th style="width: 20%">Модель</th>
+                                    <th style="width: 25%">Товар / ID</th>
+                                    <th style="width: 25%">Прогноз, шт.</th>
+                                </tr>
+                            </thead>
+                            <tbody id="forecastBody">
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        <i class="fas fa-spinner fa-spin"></i> Загружаем реальные данные...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let forecastChart = null;
+
+document.addEventListener('DOMContentLoaded', function () {
+    loadForecastData();
+});
+
+async function loadForecastData() {
+    const meta = document.getElementById('forecastMeta');
+    const sourceBadge = document.getElementById('sourceBadge');
+    try {
+        const response = await fetch('{{ url_for("api_forecast_data") }}', {
+            credentials: 'same-origin'
+        });
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.error || 'Не удалось загрузить прогноз');
+        }
+
+        const rows = Array.isArray(data.rows) ? data.rows : [];
+        const monthlySummary = Array.isArray(data.monthly_summary) ? data.monthly_summary : [];
+
+
+        updateStats(rows, monthlySummary);
+        renderChart(monthlySummary);
+        renderTable(rows);
+    } catch (error) {
+        meta.textContent = 'Ошибка загрузки';
+        sourceBadge.textContent = 'Ошибка';
+        sourceBadge.className = 'badge bg-danger';
+        renderError(error.message || 'Не удалось загрузить реальные данные');
+    }
+}
+
+function updateStats(rows, monthlySummary) {
+    const totalRows = rows.length;
+    const totalPeriods = monthlySummary.length;
+    const totalQty = rows.reduce((sum, row) => sum + (Number(row.forecast_qty) || 0), 0);
+
+    document.getElementById('statRows').textContent = totalRows.toLocaleString('ru-RU');
+    document.getElementById('statPeriods').textContent = totalPeriods.toLocaleString('ru-RU');
+    document.getElementById('statQty').textContent = totalQty.toLocaleString('ru-RU');
+}
+
+function renderChart(monthlySummary) {
+    const ctx = document.getElementById('forecastChart');
+
+    if (forecastChart) {
+        forecastChart.destroy();
+    }
+
+    if (!monthlySummary.length) {
+        forecastChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Нет данных'],
+                datasets: [{
+                    label: 'Прогноз',
+                    data: [0],
+                    backgroundColor: '#3498db'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+        return;
+    }
+
+    const labels = monthlySummary.map(item => formatMonthLabel(item.year, item.month));
+    const values = monthlySummary.map(item => Number(item.forecast_qty) || 0);
+
+    forecastChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Суммарный прогноз по месяцам',
+                data: values,
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.65)',
+                borderRadius: 8,
+                maxBarThickness: 48
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top'
+                },
+                title: {
+                    display: false,
+                    text: 'Реальный прогноз из outputs/forecast.csv'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            return ` Прогноз: ${Number(context.raw).toLocaleString('ru-RU')} шт.`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Штуки'
+                    },
+                    ticks: {
+                        callback: function (value) {
+                            return Number(value).toLocaleString('ru-RU');
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function renderTable(rows) {
+    const tbody = document.getElementById('forecastBody');
+
+    if (!rows.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center text-muted py-4">
+                    Реальные данные прогноза не найдены
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = rows.map(row => `
+        <tr>
+            <td>${escapeHtml(row.year)}</td>
+            <td>${escapeHtml(formatMonthShort(row.month))}</td>
+            <td>${escapeHtml(row.model || '—')}</td>
+            <td><span class="fw-semibold">ID ${escapeHtml(row.product_id)}</span></td>
+            <td class="text-primary fw-bold">${Number(row.forecast_qty || 0).toLocaleString('ru-RU')}</td>
+        </tr>
+    `).join('');
+}
+
+function renderError(message) {
+    const tbody = document.getElementById('forecastBody');
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="5">
+                <div class="alert alert-danger mb-0 m-3">
+                    <strong>Ошибка:</strong> ${escapeHtml(message)}
+                </div>
+            </td>
+        </tr>
+    `;
+}
+
+function formatMonthLabel(year, month) {
+    const date = new Date(Number(year), Number(month) - 1, 1);
+    return new Intl.DateTimeFormat('ru-RU', { month: 'short', year: 'numeric' }).format(date);
+}
+
+function formatMonthShort(month) {
+    const date = new Date(2026, Number(month) - 1, 1);
+    return new Intl.DateTimeFormat('ru-RU', { month: 'long' }).format(date);
+}
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replaceAll('&', '&')
+        .replaceAll('<', '<')
+        .replaceAll('>', '>')
+        .replaceAll('"', '"');
+}
+</script>
+{% endblock %}

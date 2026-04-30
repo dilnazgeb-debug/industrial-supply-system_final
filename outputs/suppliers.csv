@@ -1,0 +1,11 @@
+supplier_id,company_name,country,city,website,data_source
+1,开山控股集团股份有限公司,China,Shanghai,https://www.kaishangroup.com/en,live
+2,"Fusheng Industrial (Shanghai) Co., Ltd.",China,Shanghai,https://www.fusheng-compressor.com,simulated
+3,Air Compressor | Industrial Air Compressors - DENAIR Compressor,China,Shanghai,https://www.denair.net,live
+4,压缩机中国_空压机压缩机技术 | 阿特拉斯·科普柯中国,China,Hangzhou,https://www.atlascopco.com/en-cn/compressors,live
+5,"Ingersoll Rand Air Compressors, Power Tools, Lifting and Fluid Handling Products",China,Shanghai,https://www.ingersollrand.com,live
+6,"Shanghai Kaishan Compressor Co., Ltd.",China,Shanghai,https://www.doosan.cn,simulated
+7,Jucai Pneumatic Equipment Manufacturing,China,Hangzhou,https://www.kaeser.cn,simulated
+8,Sino Compressor Manufacturing (Shenzhen) Ltd.,China,Shenzhen,https://www.copco.com/en-cn,simulated
+9,Top Air Compressor Manufacturers for All Your Industrial Needs,China,Shanghai,https://www.alibaba.com/showroom/air-compressor-manufacturer.html,live
+10,"China Air Compressor, Air Compressor Wholesale, Manufacturers, Price | Made-in-China.com",China,Shanghai,https://www.made-in-china.com/products-search/hot-china-products/Air_Compressor.html,live

@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Главная - Система управления промышленным оборудованием{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-lg-12">
+            <div class="text-center mb-5">
+                <h1 class="display-3 fw-bold mb-3" style="color: #2c3e50;">
+                    <i class="fas fa-industry" style="color: #3498db;"></i>
+                    Система поставок и оборудования
+                </h1>
+                <p class="lead text-muted mb-0">
+                    Полноценная платформа для управления поставщиками, аудита оборудования, обработки PDF и прогнозирования спроса
+                </p>
+            </div>
+        </div>
+    </div>
+
+    {% if not session.username %}
+    <!-- Not Logged In -->
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <div class="alert alert-info border-0 shadow-lg mb-4">
+                <h5 class="alert-heading"><i class="fas fa-lock"></i> Требуется авторизация</h5>
+                <p class="mb-0">Войдите в систему, чтобы получить доступ ко всем функциям.</p>
+            </div>
+            
+            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg w-100 mb-3">
+                <i class="fas fa-sign-in-alt"></i> Войти
+            </a>
+            
+            <div class="p-4 bg-light rounded border mb-5">
+                <h6 class="mb-3"><i class="fas fa-user-circle"></i> Демо-данные:</h6>
+                <p class="small text-muted mb-1"><strong>Имя пользователя:</strong> dilnazshanova</p>
+                <p class="small text-muted mb-0"><strong>Пароль:</strong> Aa1234</p>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Logged In - Show All Features -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="alert alert-success border-0 shadow-sm">
+                <h5 class="alert-heading"><i class="fas fa-check-circle"></i> Добро пожаловать, {{ session.username }}!</h5>
+                <p class="mb-0">Выберите модуль ниже, чтобы начать работу</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Module 1: Suppliers & Products -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card border-left-success shadow-sm h-100">
+                <div class="card-header bg-success text-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-building"></i> Управление поставщиками</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text mb-3">
+                        Управляйте поставщиками, товарами и данными о продажах. Просматривайте аналитику рынка и показатели эффективности поставщиков.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('suppliers_page') }}" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-globe"></i> Просмотреть поставщиков
+                        </a>
+                        <a href="{{ url_for('products_page') }}" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-boxes"></i> Просмотреть товары
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Module 2: Equipment Management -->
+        <div class="col-lg-6">
+            <div class="card border-left-primary shadow-sm h-100">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-cogs"></i> Управление оборудованием</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text mb-3">
+                        Регистрируйте, проверяйте и отслеживайте промышленное оборудование. Контролируйте статус обслуживания и прогнозы отказов.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-chart-line"></i> Панель управления
+                        </a>
+                        <a href="{{ url_for('audit') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-clipboard-check"></i> Аудит оборудования
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Module 3: PDF Processing -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card border-left-warning shadow-sm h-100">
+                <div class="card-header bg-warning text-dark py-3">
+                    <h5 class="mb-0"><i class="fas fa-file-pdf"></i> Обработка PDF</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text mb-3">
+                        Загружайте и анализируйте технические документы. Автоматическое извлечение данных по оборудованию с возможностью ручной проверки.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('upload_pdf') }}" class="btn btn-outline-warning btn-sm">
+                            <i class="fas fa-cloud-upload-alt"></i> Загрузить PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Module 4: Forecasting & Analytics -->
+        <div class="col-lg-6">
+            <div class="card border-left-info shadow-sm h-100">
+                <div class="card-header bg-info text-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Аналитика и прогнозирование</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text mb-3">
+                        Прогноз спроса, анализ продаж и рыночная аналитика. Получайте выводы на основе исторических данных.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('forecast_page') }}" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-crystal-ball"></i> Прогноз
+                        </a>
+                        <a href="{{ url_for('supply_chain_page') }}" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-network-wired"></i> Цепочка поставок
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Features Grid -->
+    <div class="row mb-5">
+        <div class="col-lg-12 mb-4">
+            <h5 class="fw-bold"><i class="fas fa-star"></i> Ключевые возможности</h5>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="feature-box p-3 border rounded text-center h-100">
+                <i class="fas fa-database fa-2x mb-2" style="color: #3498db;"></i>
+                <h6>Множественные источники</h6>
+                <p class="small text-muted mb-0">Поддержка PostgreSQL и JSON</p>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="feature-box p-3 border rounded text-center h-100">
+                <i class="fas fa-file-pdf fa-2x mb-2" style="color: #e74c3c;"></i>
+                <h6>Парсинг PDF</h6>
+                <p class="small text-muted mb-0">Умная обработка документов</p>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="feature-box p-3 border rounded text-center h-100">
+                <i class="fas fa-brain fa-2x mb-2" style="color: #9b59b6;"></i>
+                <h6>Аудит с ИИ</h6>
+                <p class="small text-muted mb-0">Классификация BERT и прогнозы</p>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="feature-box p-3 border rounded text-center h-100">
+                <i class="fas fa-chart-line fa-2x mb-2" style="color: #27ae60;"></i>
+                <h6>Аналитика</h6>
+                <p class="small text-muted mb-0">Тренды и прогнозирование</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="p-4 bg-light rounded border text-center">
+                <h6 class="mb-3"><i class="fas fa-rocket"></i> Быстрые действия</h6>
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-home"></i> Панель управления
+                    </a>
+                    <a href="{{ url_for('audit') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-search"></i> Аудит оборудования
+                    </a>
+                    <a href="{{ url_for('upload_pdf') }}" class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-upload"></i> Импорт PDF
+                    </a>
+                    <a href="{{ url_for('suppliers_page') }}" class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-store"></i> Поставщики
+                    </a>
+                    <a href="{{ url_for('forecast_page') }}" class="btn btn-sm btn-outline-info">
+                        <i class="fas fa-chart-area"></i> Прогноз
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-danger">
+                        <i class="fas fa-sign-out-alt"></i> Выйти
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% endif %}
+</div>
+
+<style>
+.border-left-success { border-left: 4px solid #27ae60; }
+.border-left-primary { border-left: 4px solid #3498db; }
+.border-left-warning { border-left: 4px solid #f39c12; }
+.border-left-info { border-left: 4px solid #17a2b8; }
+.feature-box { transition: all 0.3s ease; }
+.feature-box:hover { 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+</style>
+
+<!-- System Information Section -->
+<div class="row mt-5 pt-5 border-top">
+    <div class="col-lg-8 mx-auto">
+        <h3 class="mb-4 text-center">
+            <i class="fas fa-info-circle"></i> Информация о системе
+        </h3>
+        
+        <div id="system-info" class="row">
+            <div class="col-md-6 mb-3">
+                <div class="card border-left border-primary">
+                    <div class="card-body">
+                        <h6 class="text-primary mb-2">
+                            <i class="fas fa-cogs"></i> Режим данных
+                        </h6>
+                        <p id="data-mode-info" class="mb-0">Загрузка...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                <div class="card border-left border-success">
+                    <div class="card-body">
+                        <h6 class="text-success mb-2">
+                            <i class="fas fa-database"></i> Доступные записи
+                        </h6>
+                        <p id="records-count" class="mb-0">Загрузка...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Загрузка статуса системы
+    fetch('/api/status')
+        .then(response => response.json())
+        .then(data => {
+            const modeInfo = document.getElementById('data-mode-info');
+            const recordsCount = document.getElementById('records-count');
+            
+            if (modeInfo) {
+                const modeText = data.mode === 'PRODUCTION' ? '☁️ Продакшн (JSON-мок)' : '💻 Локальная разработка (PostgreSQL)';
+                modeInfo.textContent = modeText;
+            }
+            
+            if (recordsCount) {
+                recordsCount.textContent = data.records + ' записей оборудования доступно';
+            }
+        })
+        .catch(error => {
+            console.log('Не удалось получить статус:', error);
+            document.getElementById('data-mode-info').textContent = 'Не удалось загрузить';
+            document.getElementById('records-count').textContent = 'Не удалось загрузить';
+        });
+</script>
+{% endblock %}

@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Аудит текста{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row g-4">
+    <div class="col-12 col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <div class="mb-4">
+            <h1 class="h3 mb-2">Аудит текста</h1>
+            <p class="text-muted mb-0">
+              Вставьте описание поставщика, отчёт или заметку по оборудованию и получите структурированный разбор.
+            </p>
+          </div>
+
+          <form method="post" class="audit-form">
+            <div class="mb-3">
+              <label for="audit_text" class="form-label">Текст для аудита</label>
+              <textarea
+                id="audit_text"
+                name="audit_text"
+                class="form-control"
+                rows="12"
+                placeholder="Вставьте сюда текст, который нужно проверить..."
+                required
+              >{{ request.form.get('audit_text', '') }}</textarea>
+              <div class="form-text">Можно вставить русский, английский или китайский текст.</div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search me-1"></i> Выполнить аудит
+              </button>
+              <button type="button" class="btn btn-outline-secondary" onclick="loadExample('pump')">
+                Пример насоса
+              </button>
+              <button type="button" class="btn btn-outline-secondary" onclick="loadExample('valve')">
+                Пример клапана
+              </button>
+              <button type="button" class="btn btn-outline-secondary" onclick="loadExample('cooler')">
+                Пример охладителя
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mt-4">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Что можно отправить на аудит</h2>
+          <ul class="mb-0">
+            <li>Описание поставщика или подрядчика.</li>
+            <li>Сводку по качеству, срокам или поставкам.</li>
+            <li>Комментарии из служебных записок, писем и отчётов.</li>
+            <li>Короткие фрагменты или большие текстовые блоки.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body p-4">
+          <h2 class="h5 mb-3">Подсказка</h2>
+          <p class="text-muted">
+            Используйте примеры, если хотите быстро проверить работу анализа. Затем замените текст на свой документ.
+          </p>
+          <div class="alert alert-info mb-4">
+            <i class="fas fa-circle-info me-2"></i>
+            Результат аудита покажет основные риски, слабые места и краткие рекомендации.
+          </div>
+
+          <h3 class="h6 mb-2">Примеры</h3>
+          <div class="d-grid gap-2">
+            <button type="button" class="btn btn-light text-start border" onclick="loadExample('pump')">
+              <strong>Насос:</strong> Kaishan KS-30, RPM, момент, температура, цена, предоплата.
+            </button>
+            <button type="button" class="btn btn-light text-start border" onclick="loadExample('valve')">
+              <strong>Клапан:</strong> Rexroth 4WRZ10, давление, температура, гарантия и условия.
+            </button>
+            <button type="button" class="btn btn-light text-start border" onclick="loadExample('cooler')">
+              <strong>Охладитель:</strong> DENAIR DA-100, мощность, давление, условия поставки.
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const examples = {
+    pump: `Наименование: Насос центробежный Kaishan KS-30
+Тип: Axial Flow Pump
+Технические характеристики:
+- Частота вращения: 1500 RPM
+- Момент крутящий: 42.5 Nm
+- Температура окружающей среды: 298.1 K
+- Температура процесса: 308.6 K
+- Мощность: 30 кВт
+Цена: USD 2,500
+Производитель: Kaishan Limited (China)
+Условия поставки: FOB Shanghai
+Требования: 100% предоплата перед отправкой
+Гарантия: 12 месяцев
+Доставка: 30 дней`,
+    valve: `Equipment Specification:
+Product: Directional Control Valve - Rexroth 4WRZ10
+Type: Proportional Directional Valve
+Technical Data:
+- Rotational Speed: 1600 RPM
+- Torque: 38.7 Nm
+- Air Temperature: 298.5 K
+- Process Temperature: 309.0 K
+- Pressure Rating: 350 bar max
+Price: $1,800 USD
+Supplier: Atlas Copco Industrial
+Terms: No warranty provided, as-is condition only
+Payment: 50% prepayment, 50% on delivery
+Delivery: 45 days lead time`,
+    cooler: `产品名称: 冷却器系统 DENAIR DA-100
+设备类型: 空气冷却器
+技术参数:
+- 转速: 2000 RPM
+- 扭矩: 35.2 Nm
+- 环境温度: 299.2 K
+- 工艺温度: 309.5 K
+- 冷却能力: 150 kW
+- 压力: 25 bar
+价格: CNY 18,000 (约 $2,500)
+制造商: DENAIR Group (China)
+条件: 仅发货，不可退货，无保修
+支付方式: 100% 预付款
+运输: 海运45天`
+  };
+
+  function loadExample(type) {
+    const textarea = document.getElementById('audit_text');
+    if (textarea && examples[type]) {
+      textarea.value = examples[type];
+      textarea.focus();
+      textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+</script>
+{% endblock %}

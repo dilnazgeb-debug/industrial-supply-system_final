@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Products - Industrial Supply System{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <h1 class="display-5 fw-bold mb-2">
+                <i class="fas fa-boxes" style="color: #e74c3c;"></i> Ассортимент
+            </h1>
+            <p class="text-muted">Просматривайте весь ассортимент оборудования от поставщиков.</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <input type="text" class="form-control" id="productFilter" 
+                           placeholder="Поиск по поставщику, модели или типу...">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-bottom">
+                    <h6 class="mb-0">
+                        <i class="fas fa-list"></i> Список оборудования
+                        <span class="badge bg-primary float-end" id="productCount">0</span>
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="productsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 5%">#</th>
+                                    <th style="width: 20%">Поставщик</th>
+                                    <th style="width: 15%">Модель</th>
+                                    <th style="width: 12%">Тип</th>
+                                    <th style="width: 12%">Давление</th>
+                                    <th style="width: 12%">Мощность</th>
+                                    <th style="width: 12%">Стоимость</th>
+                                    <th style="width: 12%">Емкость</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsBody">
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted py-4">
+                                        <i class="fas fa-spinner fa-spin"></i> Загрузка оборудования...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let allProducts = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadProducts();
+    document.getElementById('productFilter').addEventListener('input', filterProducts);
+});
+
+function loadProducts() {
+    // Load from suppliers data
+    fetch('/api/suppliers-data')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                allProducts = [];
+                data.suppliers.forEach((sup, idx) => {
+                    sup.products?.forEach(p => {
+                        allProducts.push({
+                            id: allProducts.length + 1,
+                            supplier: sup.company_name,
+                            ...p
+                        });
+                    });
+                });
+                displayProducts(allProducts);
+            }
+        })
+        .catch(e => {
+            console.error('Error:', e);
+            document.getElementById('productsBody').innerHTML = 
+                '<tr><td colspan="8" class="text-danger text-center py-4">Error loading products</td></tr>';
+        });
+}
+
+function displayProducts(items) {
+    const tbody = document.getElementById('productsBody');
+    const count = document.getElementById('productCount');
+    
+    if (items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">No products found</td></tr>';
+        count.textContent = '0';
+        return;
+    }
+    
+    count.textContent = items.length;
+    tbody.innerHTML = items.map((p, idx) => `
+        <tr>
+            <td>${idx + 1}</td>
+            <td><strong>${p.supplier}</strong></td>
+            <td>${p.model}</td>
+            <td><span class="badge bg-info">${p.type || 'N/A'}</span></td>
+            <td>${p.pressure_bar || 'N/A'} bar</td>
+            <td>${p.power_kw || 'N/A'} kW</td>
+            <td class="text-success"><strong>$${p.price_usd || 'N/A'}</strong></td>
+            <td>${p.capacity_m3min ? p.capacity_m3min + ' m³/min' : 'N/A'}</td>
+        </tr>
+    `).join('');
+}
+
+function filterProducts() {
+    const search = document.getElementById('productFilter').value.toLowerCase();
+    const filtered = allProducts.filter(p => {
+        return p.supplier.toLowerCase().includes(search) || 
+               p.model.toLowerCase().includes(search) || 
+               (p.type && p.type.toLowerCase().includes(search));
+    });
+    displayProducts(filtered);
+}
+</script>
+{% endblock %}

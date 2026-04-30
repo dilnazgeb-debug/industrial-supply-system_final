@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Ошибка{% endblock %}
+
+{% block content %}
+{% set code = error_code or 500 %}
+{% set message = error_message or '' %}
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-8 col-xl-7">
+      <div class="card shadow-sm">
+        <div class="card-body p-4 p-md-5 text-center">
+          <div class="display-1 fw-bold text-primary mb-3">{{ code }}</div>
+
+          {% if code == 404 %}
+            <h1 class="h3 mb-3">Страница не найдена</h1>
+            <p class="text-muted mb-4">
+              Запрошенный адрес отсутствует или был перемещён. Проверьте ссылку и попробуйте ещё раз.
+            </p>
+          {% elif code == 500 %}
+            <h1 class="h3 mb-3">Внутренняя ошибка сервера</h1>
+            <p class="text-muted mb-4">
+              На сервере возникла ошибка при обработке запроса. Попробуйте обновить страницу позже.
+            </p>
+          {% else %}
+            <h1 class="h3 mb-3">Произошла ошибка</h1>
+            <p class="text-muted mb-4">
+              Не удалось обработать запрос. Пожалуйста, попробуйте снова.
+            </p>
+          {% endif %}
+
+          {% if message %}
+            <div class="alert alert-light border text-start text-md-center mb-4">
+              {{ message }}
+            </div>
+          {% endif %}
+
+          <div class="d-flex flex-wrap justify-content-center gap-2">
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+              <i class="fas fa-house me-1"></i> На главную
+            </a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+              <i class="fas fa-boxes me-1"></i> Оборудование
+            </a>
+            <a href="{{ url_for('status') }}" class="btn btn-outline-secondary">
+              <i class="fas fa-heartbeat me-1"></i> Статус системы
+            </a>
+          </div>
+
+          <hr class="my-4">
+
+          <div class="text-muted">
+            Если проблема повторяется, обратитесь к администратору или вернитесь к <a href="{{ url_for('login') }}">странице входа</a>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

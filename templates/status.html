@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Статус системы{% endblock %}
+
+{% block content %}
+{% set data = status or {} %}
+{% set services = data.get('services', []) %}
+{% set system_info = data.get('system_info', data.get('system', {})) %}
+{% set api_endpoints = data.get('api_endpoints', data.get('endpoints', [])) %}
+{% set overall_raw = (data.get('overall_status') or data.get('status') or '') | lower %}
+{% set overall_label = 'Неизвестно' %}
+{% if overall_raw in ['ok', 'healthy', 'good', 'running', 'online'] %}
+  {% set overall_label = 'Работает нормально' %}
+{% elif overall_raw in ['warning', 'degraded', 'partial'] %}
+  {% set overall_label = 'Есть замечания' %}
+{% elif overall_raw in ['critical', 'down', 'error', 'offline'] %}
+  {% set overall_label = 'Сбой' %}
+{% endif %}
+{% set label_map = {
+  'cpu': 'Процессор',
+  'cpu_usage': 'Загрузка CPU',
+  'memory': 'Память',
+  'memory_usage': 'Загрузка памяти',
+  'ram': 'ОЗУ',
+  'disk': 'Диск',
+  'disk_usage': 'Загрузка диска',
+  'database': 'База данных',
+  'db': 'База данных',
+  'host': 'Хост',
+  'port': 'Порт',
+  'version': 'Версия',
+  'python_version': 'Версия Python',
+  'flask_version': 'Версия Flask',
+  'environment': 'Окружение',
+  'status': 'Статус',
+  'uptime': 'Время работы',
+  'server_time': 'Время сервера',
+  'updated_at': 'Обновлено'
+} %}
+
+<div class="container py-4">
+  <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-2">
+          <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Главная</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Статус системы</li>
+        </ol>
+      </nav>
+      <h1 class="h3 mb-1">Статус системы</h1>
+      <p class="text-muted mb-0">Мониторинг служб, API и основных параметров приложения в реальном времени.</p>
+    </div>
+    <div class="text-md-end">
+      <div class="h5 mb-1" id="server-time">{{ data.get('server_time') or data.get('updated_at') or '—' }}</div>
+      <div class="text-muted small">Время работы: <span id="uptime">{{ data.get('uptime') or '—' }}</span></div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Общий статус</div>
+          {% if overall_raw in ['ok', 'healthy', 'good', 'running', 'online'] %}
+            <span class="badge bg-success mb-2">Работает нормально</span>
+          {% elif overall_raw in ['warning', 'degraded', 'partial'] %}
+            <span class="badge bg-warning text-dark mb-2">Есть замечания</span>
+          {% elif overall_raw in ['critical', 'down', 'error', 'offline'] %}
+            <span class="badge bg-danger mb-2">Сбой</span>
+          {% else %}
+            <span class="badge bg-secondary mb-2">Неизвестно</span>
+          {% endif %}
+          <div class="small text-muted">Состояние основных компонентов системы.</div>
+          <div class="fw-semibold mt-1">{{ overall_label }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Доступные службы</div>
+          <div class="h3 mb-1">{{ services|length }}</div>
+          <div class="small text-muted">Сервисы и фоновые задачи, которые сейчас отслеживаются.</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="text-muted small mb-1">API-эндпоинты</div>
+          <div class="h3 mb-1">{{ api_endpoints|length }}</div>
+          <div class="small text-muted">Проверяемые маршруты и их текущее состояние.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-12 col-lg-7">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-white">
+          <h2 class="h5 mb-0">Службы приложения</h2>
+        </div>
+        <div class="card-body">
+          {% if services %}
+            <div class="list-group list-group-flush">
+              {% for service in services %}
+                {% set service_state = (service.get('status') or service.get('state') or '') | lower %}
+                <div class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                  <div>
+                    <div class="fw-semibold">{{ service.get('name') or service.get('title') or 'Служба' }}</div>
+                    <div class="text-muted small">{{ service.get('description') or 'Подробности недоступны.' }}</div>
+                  </div>
+                  <div class="text-md-end">
+                    {% if service_state in ['ok', 'healthy', 'running', 'online', 'up'] %}
+                      <span class="badge bg-success">В норме</span>
+                    {% elif service_state in ['warning', 'degraded', 'partial'] %}
+                      <span class="badge bg-warning text-dark">Есть замечания</span>
+                    {% elif service_state in ['critical', 'down', 'error', 'offline'] %}
+                      <span class="badge bg-danger">Недоступна</span>
+                    {% else %}
+                      <span class="badge bg-secondary">Неизвестно</span>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center text-muted py-4">
+              <i class="fas fa-server fa-2x mb-3"></i>
+              <div>Информация о службах пока недоступна.</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-5">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <h2 class="h5 mb-0">Системная информация</h2>
+        </div>
+        <div class="card-body">
+          {% if system_info %}
+            <dl class="row mb-0">
+              {% for key, value in system_info.items() %}
+                <dt class="col-sm-5 text-muted">{{ label_map.get(key, 'Параметр') }}</dt>
+                <dd class="col-sm-7">{{ value }}</dd>
+              {% endfor %}
+            </dl>
+          {% else %}
+            <p class="text-muted mb-0">Данные о системе отсутствуют.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h2 class="h5 mb-0">API-эндпоинты</h2>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Маршрут</th>
+                <th scope="col">Описание</th>
+                <th scope="col">Статус</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if api_endpoints %}
+                {% for endpoint in api_endpoints %}
+                  {% set endpoint_state = (endpoint.get('status') or endpoint.get('state') or '') | lower %}
+                  <tr>
+                    <td class="text-nowrap">{{ endpoint.get('path') or endpoint.get('route') or endpoint.get('url') or '—' }}</td>
+                    <td>{{ endpoint.get('description') or 'Нет описания' }}</td>
+                    <td>
+                      {% if endpoint_state in ['ok', 'healthy', 'running', 'online', 'up'] %}
+                        <span class="badge bg-success">В норме</span>
+                      {% elif endpoint_state in ['warning', 'degraded', 'partial'] %}
+                        <span class="badge bg-warning text-dark">Проверить</span>
+                      {% elif endpoint_state in ['critical', 'down', 'error', 'offline'] %}
+                        <span class="badge bg-danger">Ошибка</span>
+                      {% else %}
+                        <span class="badge bg-secondary">Неизвестно</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="3" class="text-center text-muted py-4">Список API-эндпоинтов пока пуст.</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

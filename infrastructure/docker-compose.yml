@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  # БАЗА ДАННЫХ
+  postgres:
+    image: postgres:15-alpine
+    container_name: supply_chain_postgres
+    platform: linux/arm64
+    environment:
+      POSTGRES_USER: analytics
+      POSTGRES_PASSWORD: secure_password_123
+      POSTGRES_DB: supply_chain_data_lake
+    ports:
+      - "5432:5432"
+    networks:
+      - supply_chain_network
+
+  # SPARK CLUSTER
+# SPARK CLUSTER
+  spark-master:
+    image: apache/spark:3.5.0
+    container_name: spark_master
+    platform: linux/arm64
+    user: root
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+    environment:
+      - SPARK_MODE=master
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    networks:
+      - supply_chain_network
+
+  spark-worker-1:
+    image: apache/spark:3.5.0
+    container_name: spark_worker_1
+    platform: linux/arm64
+    user: root
+    depends_on:
+      - spark-master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+    networks:
+      - supply_chain_network
+
+  # KAFKA & ZOOKEEPER
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    platform: linux/arm64
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    networks:
+      - supply_chain_network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    platform: linux/arm64
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+    networks:
+      - supply_chain_network
+
+  # REDIS & PROMETHEUS
+  redis:
+    image: redis:7-alpine
+    container_name: redis_cache
+    platform: linux/arm64
+    networks:
+      - supply_chain_network
+
+  prometheus:
+    image: prom/prometheus:v2.47.2
+    container_name: prometheus
+    platform: linux/arm64
+    ports:
+      - "9090:9090"
+    networks:
+      - supply_chain_network
+
+networks:
+  supply_chain_network:
+    driver: bridge

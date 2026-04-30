@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}Suppliers - Industrial Supply System{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="display-5 fw-bold mb-0">
+                    <i class="fas fa-building" style="color: #27ae60;"></i> Поставщики
+                </h1>
+                <button class="btn btn-success" id="scrapeBtn">
+                    <i class="fas fa-cloud-download"></i> Выгрузить поставщиков
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" id="searchInput" 
+                                   placeholder="Поиск по названию...">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="countryFilter">
+                                <option value="">Все страны</option>
+                                <option value="China">Китай</option>
+                                <option value="USA">США</option>
+                                <option value="Germany">Германия</option>
+                                <option value="Japan">Япония</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-primary w-100" id="resetBtn">
+                                <i class="fas fa-redo"></i> Сбросить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Suppliers Table -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-bottom">
+                    <h6 class="mb-0">
+                        <i class="fas fa-list"></i> Список поставщиков
+                        <span class="badge bg-primary float-end" id="supplierCount">0</span>
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="suppliersTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 5%"><i class="fas fa-hashtag"></i></th>
+                                    <th style="width: 25%">Название компании</th>
+                                    <th style="width: 15%">Страна</th>
+                                    <th style="width: 15%">Город</th>
+                                    <th style="width: 25%">Контакты</th>
+                                    <th style="width: 15%">Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="suppliersBody">
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fas fa-spinner fa-spin"></i> Загрузка...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details Modal -->
+    <div class="modal fade" id="supplierModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title" id="modalTitle">Детали поставщика</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <!-- Populated by JavaScript -->
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <a href="#" id="websiteLink" class="btn btn-primary" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> Перейти на сайт
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let suppliers = [];
+
+// Load suppliers on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadSuppliers();
+    
+    document.getElementById('scrapeBtn').addEventListener('click', scrapeSuppliers);
+    document.getElementById('searchInput').addEventListener('input', filterSuppliers);
+    document.getElementById('countryFilter').addEventListener('change', filterSuppliers);
+    document.getElementById('resetBtn').addEventListener('click', resetFilters);
+});
+
+function loadSuppliers() {
+    fetch('/api/suppliers-data')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                suppliers = data.suppliers;
+                displaySuppliers(suppliers);
+            }
+        })
+        .catch(e => {
+            console.error('Error:', e);
+            document.getElementById('suppliersBody').innerHTML = 
+                '<tr><td colspan="6" class="text-danger text-center py-4">Error loading suppliers</td></tr>';
+        });
+}
+
+function displaySuppliers(items) {
+    const tbody = document.getElementById('suppliersBody');
+    const count = document.getElementById('supplierCount');
+    
+    if (items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No suppliers found</td></tr>';
+        count.textContent = '0';
+        return;
+    }
+    
+    count.textContent = items.length;
+    tbody.innerHTML = items.map((sup, idx) => `
+        <tr>
+            <td>${idx + 1}</td>
+            <td><strong>${sup.company_name}</strong></td>
+            <td><span class="badge bg-info">${sup.country}</span></td>
+            <td>${sup.city || 'N/A'}</td>
+            <td>
+                <small>
+                    ${sup.contacts?.email ? `<div><i class="fas fa-envelope"></i> ${sup.contacts.email}</div>` : ''}
+                    ${sup.contacts?.phone ? `<div><i class="fas fa-phone"></i> ${sup.contacts.phone}</div>` : ''}
+                </small>
+            </td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary" onclick="showDetails(${idx})">
+                    <i class="fas fa-eye"></i> Просмотреть
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function showDetails(idx) {
+    const sup = suppliers[idx];
+    const modal = new bootstrap.Modal(document.getElementById('supplierModal'));
+    
+    document.getElementById('modalTitle').textContent = sup.company_name;
+    document.getElementById('websiteLink').href = sup.website || '#';
+    
+    let html = `
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h6>Location</h6>
+                <p class="mb-1"><strong>${sup.country}</strong></p>
+                <p class="text-muted">${sup.city || 'N/A'}</p>
+            </div>
+            <div class="col-md-6">
+                <h6>Contact Information</h6>
+                ${sup.contacts?.email ? `<p class="mb-1"><i class="fas fa-envelope"></i> ${sup.contacts.email}</p>` : ''}
+                ${sup.contacts?.phone ? `<p class="mb-1"><i class="fas fa-phone"></i> ${sup.contacts.phone}</p>` : ''}
+                ${sup.contacts?.whatsapp ? `<p class="mb-1"><i class="fab fa-whatsapp"></i> ${sup.contacts.whatsapp}</p>` : ''}
+            </div>
+        </div>
+        
+        <h6>Products</h6>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>Model</th>
+                        <th>Type</th>
+                        <th>Specs</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${sup.products.map(p => `
+                        <tr>
+                            <td>${p.model}</td>
+                            <td>${p.type}</td>
+                            <td>
+                                ${p.pressure_bar ? `${p.pressure_bar} bar ` : ''}
+                                ${p.power_kw ? `${p.power_kw} kW` : ''}
+                            </td>
+                            <td>${p.price_usd ? '$' + p.price_usd : 'N/A'}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    document.getElementById('modalBody').innerHTML = html;
+    modal.show();
+}
+
+function filterSuppliers() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const country = document.getElementById('countryFilter').value;
+    
+    const filtered = suppliers.filter(s => {
+        const matchSearch = s.company_name.toLowerCase().includes(search) || 
+                          s.city?.toLowerCase().includes(search);
+        const matchCountry = !country || s.country === country;
+        return matchSearch && matchCountry;
+    });
+    
+    displaySuppliers(filtered);
+}
+
+function resetFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('countryFilter').value = '';
+    displaySuppliers(suppliers);
+}
+
+function scrapeSuppliers() {
+    const btn = document.getElementById('scrapeBtn');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Выгрузка...';
+    
+    fetch('/api/suppliers-scrape')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                suppliers = data.data;
+                displaySuppliers(suppliers);
+                alert(`✅ Нашлось ${data.count} поставщиков!`);
+            }
+        })
+        .catch(e => alert('❌ Scraping failed: ' + e.message))
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        });
+}
+</script>
+{% endblock %}

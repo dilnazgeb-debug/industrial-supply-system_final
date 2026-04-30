@@ -1,0 +1,231 @@
+{
+  "version": "1.0",
+  "description": "Equipment Parameter Knowledge Base for RAG-based inference",
+  "equipment_types": {
+    "pump": {
+      "common_defaults": {
+        "rpm": 1500,
+        "pressure": 150,
+        "temperature": 305,
+        "flow_rate": 100
+      },
+      "variants": {
+        "centrifugal": {
+          "rpm": 1800,
+          "pressure": 100,
+          "temperature": 310
+        },
+        "gear": {
+          "rpm": 1200,
+          "pressure": 200,
+          "temperature": 308
+        },
+        "high_pressure": {
+          "rpm": 1000,
+          "pressure": 350,
+          "temperature": 315
+        }
+      }
+    },
+    "valve": {
+      "common_defaults": {
+        "pressure": 200,
+        "temperature": 305,
+        "response_time": 150
+      },
+      "variants": {
+        "ball_valve": {
+          "pressure": 250,
+          "temperature": 310
+        },
+        "directional": {
+          "pressure": 210,
+          "temperature": 315
+        },
+        "pressure_relief": {
+          "pressure": 280,
+          "temperature": 308
+        }
+      }
+    },
+    "cooler": {
+      "common_defaults": {
+        "temperature": 305,
+        "flow_rate": 150,
+        "air_temperature": 298
+      },
+      "variants": {
+        "air_cooler": {
+          "temperature": 310,
+          "flow_rate": 200
+        },
+        "water_cooler": {
+          "temperature": 305,
+          "flow_rate": 100
+        }
+      }
+    },
+    "accumulator": {
+      "common_defaults": {
+        "pressure": 150,
+        "temperature": 305,
+        "volume": 10
+      },
+      "variants": {
+        "hydraulic": {
+          "pressure": 200,
+          "temperature": 308
+        },
+        "pneumatic": {
+          "pressure": 100,
+          "temperature": 298
+        }
+      }
+    }
+  },
+  "models": [
+    {
+      "model_number": "X-500",
+      "equipment_type": "pump",
+      "variant": "centrifugal",
+      "manufacturer": "Hydro Systems",
+      "description": "High-capacity centrifugal pump for industrial applications",
+      "default_parameters": {
+        "rpm": 1800,
+        "pressure": 120,
+        "temperature": 310,
+        "flow_rate": 500,
+        "power": 75
+      }
+    },
+    {
+      "model_number": "X-501",
+      "equipment_type": "pump",
+      "variant": "gear",
+      "manufacturer": "Hydro Systems",
+      "description": "Precision gear pump for high-pressure applications",
+      "default_parameters": {
+        "rpm": 1200,
+        "pressure": 250,
+        "temperature": 315,
+        "flow_rate": 50,
+        "power": 30
+      }
+    },
+    {
+      "model_number": "V-200",
+      "equipment_type": "valve",
+      "variant": "directional",
+      "manufacturer": "Valve Corp",
+      "description": "Proportional directional control valve with integrated electronics",
+      "default_parameters": {
+        "rpm": 1500,
+        "pressure": 210,
+        "temperature": 315,
+        "response_time": 100
+      }
+    },
+    {
+      "model_number": "V-201",
+      "equipment_type": "valve",
+      "variant": "ball_valve",
+      "manufacturer": "Valve Corp",
+      "description": "Industrial-grade ball valve for general fluid control",
+      "default_parameters": {
+        "pressure": 250,
+        "temperature": 310,
+        "torque": 80
+      }
+    },
+    {
+      "model_number": "C-100",
+      "equipment_type": "cooler",
+      "variant": "air_cooler",
+      "manufacturer": "Thermal Solutions",
+      "description": "Aluminum core air cooler for hydraulic fluid management",
+      "default_parameters": {
+        "temperature": 310,
+        "flow_rate": 200,
+        "air_temperature": 298,
+        "pressure": 5
+      }
+    },
+    {
+      "model_number": "C-101",
+      "equipment_type": "cooler",
+      "variant": "water_cooler",
+      "manufacturer": "Thermal Solutions",
+      "description": "Shell-and-tube water cooler for continuous operation",
+      "default_parameters": {
+        "temperature": 305,
+        "flow_rate": 100,
+        "air_temperature": 298,
+        "pressure": 3
+      }
+    },
+    {
+      "model_number": "A-50",
+      "equipment_type": "accumulator",
+      "variant": "hydraulic",
+      "manufacturer": "Pressure Storage Inc",
+      "description": "1-liter hydraulic accumulator with safety block",
+      "default_parameters": {
+        "pressure": 210,
+        "temperature": 315,
+        "volume": 1
+      }
+    },
+    {
+      "model_number": "A-100",
+      "equipment_type": "accumulator",
+      "variant": "pneumatic",
+      "manufacturer": "Pressure Storage Inc",
+      "description": "10-liter pneumatic accumulator for compressed air systems",
+      "default_parameters": {
+        "pressure": 100,
+        "temperature": 298,
+        "volume": 10
+      }
+    }
+  ],
+  "fuzzy_mappings": {
+    "high_pressure_pump": {
+      "equipment_type": "pump",
+      "variant": "high_pressure",
+      "suggested_defaults": {
+        "pressure": 350,
+        "rpm": 1000,
+        "temperature": 315
+      }
+    },
+    "gear_motor": {
+      "equipment_type": "pump",
+      "variant": "gear",
+      "suggested_defaults": {
+        "rpm": 1200,
+        "pressure": 200,
+        "torque": 100
+      }
+    },
+    "proportional_valve": {
+      "equipment_type": "valve",
+      "variant": "directional",
+      "suggested_defaults": {
+        "pressure": 210,
+        "temperature": 315,
+        "response_time": 150
+      }
+    }
+  },
+  "fallback_strategies": {
+    "when_model_not_found": "Use equipment type defaults and context clues",
+    "when_parameters_missing": "Use equipment type and variant defaults, mark as estimated",
+    "priority_order": [
+      "extracted_from_text",
+      "extracted_from_tables",
+      "model_specific_defaults",
+      "equipment_type_defaults",
+      "fuzzy_inference"
+    ]
+  }
+}

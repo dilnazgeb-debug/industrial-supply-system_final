@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Результаты аудита PDF - Система мониторинга</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            /* Сменили на СИНИЙ как на остальных страницах */
+            --primary-blue: #0d6efd;
+            --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --border-radius: 16px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .navbar {
+            background: var(--primary-gradient) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+        }
+
+        .page-header {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .stat-box {
+            background: #ffffff;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+
+        .stat-box h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin: 0;
+        }
+
+        .equipment-card {
+            background: var(--glass-bg);
+            border: 2px solid transparent;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        /* Стиль для успешно сохраненных карточек */
+        .equipment-card.border-success {
+            border: 2px solid #198754;
+        }
+
+        .card-header {
+            background: #f9fafb !important;
+            padding: 1.25rem;
+        }
+
+        /* Стили для валидации (красная подсветка) */
+        .editable-field.empty .form-control, 
+        .editable-field.empty .form-select {
+            border: 2px solid #dc3545;
+            background-color: #fff8f8;
+        }
+        .empty-indicator { color: #dc3545; font-size: 12px; font-weight: bold; }
+
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-red { background: #fee2e2; color: #dc2626; }
+        .status-yellow { background: #fef3c7; color: #d97706; }
+        .status-green { background: #dcfce7; color: #16a34a; }
+        .status-gray { background: #f3f4f6; color: #6b7280; }
+
+        .parameter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
+        .ml-alert {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
+                <i class="fas fa-microchip me-2"></i> Система Аудита
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('audit') }}">Текстовый аудит</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('upload_pdf') }}">Загрузка PDF</a></li>
+                    <li class="nav-item"><a class="nav-link text-warning" href="{{ url_for('logout') }}">Выйти</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="fw-bold mb-1">📊 Результаты анализа PDF</h1>
+                    <p class="text-muted">Файл: <span class="badge bg-light text-dark">{{ pdf_filename }}</span></p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="{{ url_for('upload_pdf') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-upload me-2"></i> Загрузить другой PDF
+                    </a>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-4">
+                <div class="col-md-4">
+                    <div class="stat-box">
+                        <p class="text-muted small text-uppercase fw-bold">Всего найдено</p>
+                        <h3>{{ total_items }}</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-box">
+                        <p class="text-muted small text-uppercase fw-bold">Проверено</p>
+                        <h3 id="processedCount">0</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-box">
+                        <p class="text-muted small text-uppercase fw-bold">Сохранено в БД</p>
+                        <h3 id="savedCount">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <div class="progress" style="height: 12px; border-radius: 10px;">
+                    <div class="progress-bar bg-success" id="progressBar" style="width: 0%"></div>
+                </div>
+                <div class="text-center mt-2 small fw-bold" id="progressText">0% завершено</div>
+            </div>
+        </div>
+
+        <div id="equipmentContainer">
+            {% for audit in audits %}
+            <div class="card equipment-card mb-4" id="equipment-{{ audit.segment_index }}">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">⚙️ Объект №{{ audit.segment_index + 1 }}</h5>
+                        <span class="status-badge status-{{ audit.status_color or 'gray' }}">
+                            {{ 'Обработано' if audit.status_text == 'Processed' else 'Ожидает проверки' }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <form class="equipment-form" data-segment="{{ audit.segment_index }}">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3 editable-field" id="field-equipment_type">
+                                <label class="form-label fw-semibold">Тип оборудования *</label>
+                                <select name="equipment_type" class="form-select equipment-type-select" id="equipment_type_{{ audit.segment_index }}" data-segment="{{ audit.segment_index }}">
+                                    <option value="">-- Выберите --</option>
+                                    <option value="pump" {% if audit.equipment_type == 'pump' %}selected{% endif %}>Насос</option>
+                                    <option value="valve" {% if audit.equipment_type == 'valve' %}selected{% endif %}>Клапан</option>
+                                    <option value="cooler" {% if audit.equipment_type == 'cooler' %}selected{% endif %}>Охладитель</option>
+                                    <option value="accumulator" {% if audit.equipment_type == 'accumulator' %}selected{% endif %}>Аккумулятор</option>
+                                </select>
+                                <div class="empty-indicator" style="display: none;">Обязательное поле</div>
+                            </div>
+
+                            <div class="col-md-6 mb-3 editable-field" id="field-model_number">
+                                <label class="form-label fw-semibold">Модель / SN *</label>
+                                <input type="text" name="model_number" class="form-control model-number-input" 
+                                       id="model_number_{{ audit.segment_index }}" value="{{ audit.model_number or '' }}" data-segment="{{ audit.segment_index }}">
+                                <div class="empty-indicator" style="display: none;">Обязательное поле</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Производитель</label>
+                            <input type="text" name="supplier_name" class="form-control" 
+                                   value="{{ audit.supplier.name if audit.supplier else '' }}">
+                        </div>
+
+                        <h6 class="fw-bold text-primary mb-3"><i class="fas fa-sliders-h me-2"></i>Технические параметры (7 параметров)</h6>
+                        <div class="parameter-grid mb-4">
+                            <div class="form-group">
+                                <label class="small text-muted">RPM (Скорость)</label>
+                                <input type="number" name="rpm" class="form-control parameter-input" value="{{ audit.parameters.get('rpm', '') }}" data-segment="{{ audit.segment_index }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="small text-muted">Torque (Крутящий момент)</label>
+                                <input type="number" name="torque" class="form-control parameter-input" value="{{ audit.parameters.get('torque', '') }}" data-segment="{{ audit.segment_index }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="small text-muted">Air Temp (K)</label>
+                                <input type="number" name="air_temperature" class="form-control parameter-input" value="{{ audit.parameters.get('air_temperature', '') }}" data-segment="{{ audit.segment_index }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="small text-muted">Process Temp (K)</label>
+                                <input type="number" name="process_temperature" class="form-control parameter-input" value="{{ audit.parameters.get('process_temperature', '') }}" data-segment="{{ audit.segment_index }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="small text-muted">Tool Wear (min)</label>
+                                <input type="number" name="tool_wear" class="form-control parameter-input" value="{{ audit.parameters.get('tool_wear', '') }}" data-segment="{{ audit.segment_index }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="small text-muted">Pressure (bar)</label>
+                                <input type="number" name="pressure" class="form-control parameter-input" value="{{ audit.parameters.get('pressure', '') }}" data-segment="{{ audit.segment_index }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="small text-muted">Flow Rate (m³/h)</label>
+                                <input type="number" name="flow_rate" class="form-control parameter-input" value="{{ audit.parameters.get('flow_rate', '') }}" data-segment="{{ audit.segment_index }}">
+                            </div>
+                        </div>
+
+                        {% if audit.ml_prediction or True %}
+                        <div class="ml-alert mb-4">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3 fs-3 text-primary">🤖</div>
+                                <div>
+                                    <h6 class="mb-1 fw-bold">Анализ рисков ML</h6>
+                                    <p class="mb-0 small">
+                                        Вероятность отказа: <span class="fw-bold text-danger" id="failure_prob_{{ audit.segment_index }}">
+                                            {{ "%.1f" % (audit.failure_probability or 0) }}%
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-primary btn-sm save-to-db-btn" data-segment="{{ audit.segment_index }}">
+                                <i class="fas fa-save me-1"></i> Сохранить
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm recalculate-btn" data-segment="{{ audit.segment_index }}">
+                                <i class="fas fa-sync-alt me-1"></i> Пересчитать
+                            </button>
+                            <button type="button" class="btn btn-light btn-sm" data-bs-toggle="collapse" data-bs-target="#details-{{ audit.segment_index }}">
+                                Подробности
+                            </button>
+                        </div>
+
+                        <div class="collapse mt-3" id="details-{{ audit.segment_index }}">
+                            <div class="p-3 bg-light rounded small">
+                                <strong>Исходный текст:</strong> {{ audit.input_text[:300] }}...
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Код JS остается прежним, но теперь он будет НАХОДИТЬ элементы по ID
+        
+        document.querySelectorAll('.recalculate-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const segment = btn.getAttribute('data-segment');
+                await recalculateAudit(segment);
+            });
+        });
+
+        document.querySelectorAll('.save-to-db-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const segment = btn.getAttribute('data-segment');
+                await saveToDB(segment);
+            });
+        });
+
+        // Валидация
+        function validateForm(segment) {
+            const typeSelect = document.getElementById(`equipment_type_${segment}`);
+            const modelInput = document.getElementById(`model_number_${segment}`);
+            const typeField = typeSelect.closest('.editable-field');
+            const modelField = modelInput.closest('.editable-field');
+
+            let isValid = true;
+            if (!typeSelect.value) {
+                typeField.classList.add('empty');
+                typeField.querySelector('.empty-indicator').style.display = 'block';
+                isValid = false;
+            } else {
+                typeField.classList.remove('empty');
+                typeField.querySelector('.empty-indicator').style.display = 'none';
+            }
+
+            if (!modelInput.value) {
+                modelField.classList.add('empty');
+                modelField.querySelector('.empty-indicator').style.display = 'block';
+                isValid = false;
+            } else {
+                modelField.classList.remove('empty');
+                modelField.querySelector('.empty-indicator').style.display = 'none';
+            }
+            return isValid;
+        }
+
+        async function recalculateAudit(segment) {
+            const btn = document.querySelector(`[data-segment="${segment}"].recalculate-btn`);
+            btn.disabled = true;
+            btn.innerHTML = '⏳...';
+
+            try {
+                const form = document.querySelector(`[data-segment="${segment}"].equipment-form`);
+                const formData = new FormData(form);
+
+                const response = await fetch('{{ url_for("api_audit_recalculate") }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        original_text: 'Manual Correction',
+                        corrections: Object.fromEntries(formData)
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    const probSpan = document.getElementById(`failure_prob_${segment}`);
+                    if (probSpan) probSpan.innerText = data.audit.failure_probability.toFixed(1) + '%';
+                    showMessage('Данные обновлены!', 'success');
+                }
+            } catch (e) { showMessage('Ошибка!', 'danger'); }
+            finally { btn.disabled = false; btn.innerHTML = '🔄 Пересчитать'; }
+        }
+
+        async function saveToDB(segment) {
+            if (!validateForm(segment)) return;
+            const btn = document.querySelector(`[data-segment="${segment}"].save-to-db-btn`);
+            btn.disabled = true;
+
+            try {
+                const form = document.querySelector(`[data-segment="${segment}"].equipment-form`);
+                const formData = new FormData(form);
+                const response = await fetch('{{ url_for("api_save_to_db") }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(Object.fromEntries(formData))
+                });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById(`equipment-${segment}`).classList.add('border-success');
+                    btn.innerHTML = '✅ Сохранено';
+                    updateProgress();
+                }
+            } catch (e) { showMessage('Ошибка!', 'danger'); btn.disabled = false; }
+        }
+
+        function updateProgress() {
+            const total = {{ total_items }};
+            const saved = document.querySelectorAll('.equipment-card.border-success').length;
+            const percent = Math.round((saved / total) * 100);
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressText').innerText = percent + '% завершено';
+            document.getElementById('savedCount').innerText = saved;
+        }
+
+        function showMessage(msg, type) {
+            const div = document.createElement('div');
+            div.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
+            div.style.zIndex = "9999";
+            div.innerText = msg;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
+        }
+    </script>
+</body>
+</html>

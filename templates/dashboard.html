@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Оборудование{% endblock %}
+
+{% block content %}
+{% set equipment_list = equipment or [] %}
+{% set category_list = categories or [] %}
+{% set summary = stats or {} %}
+
+<div class="container py-4">
+  <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-2">
+          <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Главная</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Оборудование</li>
+        </ol>
+      </nav>
+      <h1 class="h3 mb-1">Оборудование</h1>
+      <p class="text-muted mb-0">Просматривайте позиции, фильтруйте по категориям и открывайте карточки оборудования.</p>
+    </div>
+<div class="d-flex flex-wrap gap-2">
+  <a href="{{ url_for('status') }}" class="btn btn-outline-secondary">
+    <i class="fas fa-heartbeat me-1"></i> Статус системы
+  </a>
+  
+  <a href="{{ url_for('upload_pdf') }}" class="btn btn-info">
+    <i class="fas fa-file-pdf me-1"></i> Анализ PDF
+  </a>
+
+  <a href="{{ url_for('audit') }}" class="btn btn-primary">
+    <i class="fas fa-clipboard-check me-1"></i> Провести аудит
+  </a>
+</div>
+  </div>
+
+  
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="text-muted small">Всего позиций</div>
+              <div class="h3 mb-0">{{ summary.get('total', equipment_list|length) }}</div>
+            </div>
+            <div class="fs-2 text-primary">
+              <i class="fas fa-boxes"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="text-muted small">В работе</div>
+              <div class="h3 mb-0">{{ summary.get('working', summary.get('active', 0)) }}</div>
+            </div>
+            <div class="fs-2 text-success">
+              <i class="fas fa-circle-check"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="text-muted small">На обслуживании</div>
+              <div class="h3 mb-0">{{ summary.get('maintenance', 0) }}</div>
+            </div>
+            <div class="fs-2 text-warning">
+              <i class="fas fa-screwdriver-wrench"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="text-muted small">Критично</div>
+              <div class="h3 mb-0">{{ summary.get('critical', 0) }}</div>
+            </div>
+            <div class="fs-2 text-danger">
+              <i class="fas fa-triangle-exclamation"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-end">
+        <div class="col-12 col-md-8 col-lg-6">
+          <label for="category" class="form-label">Категория</label>
+          <select id="category" name="category" class="form-select">
+            <option value="">Все категории</option>
+            {% for category in category_list %}
+              <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>{{ category }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12 col-md-auto d-flex gap-2">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-filter me-1"></i> Применить
+          </button>
+          <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-rotate-left me-1"></i> Сбросить
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-header bg-white d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+      <div>
+        <h2 class="h5 mb-0">Список оборудования</h2>
+        <div class="text-muted small">Нажмите на название, чтобы открыть подробную карточку.</div>
+      </div>
+      <span class="badge bg-light text-dark">
+        Показано: {{ equipment_list|length }}
+      </span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Название</th>
+            <th scope="col">Категория</th>
+            <th scope="col">Бренд / модель</th>
+            <th scope="col">Местоположение</th>
+            <th scope="col">Статус</th>
+            <th scope="col" class="text-end">Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if equipment_list %}
+            {% for item in equipment_list %}
+              {% set status_value = (item.get('status') or item.get('state') or '') | lower %}
+              {% set status_display = 'Не указан' %}
+              {% if status_value in ['ok', 'working', 'active', 'available', 'ready', 'operational'] %}
+                {% set status_display = 'В работе' %}
+              {% elif status_value in ['maintenance', 'repair', 'warning', 'planned'] %}
+                {% set status_display = 'На обслуживании' %}
+              {% elif status_value in ['critical', 'broken', 'error', 'inactive', 'offline'] %}
+                {% set status_display = 'Проблема' %}
+              {% endif %}
+              <tr>
+                <td class="text-muted">{{ loop.index }}</td>
+                <td>
+  <div class="fw-semibold">
+    {{ item.get('brand', '') }} {{ item.get('model', '') or 'Без названия' }}
+  </div>
+  {% if item.get('specs') %}
+    <div class="text-muted small">{{ item.get('specs') }}</div>
+  {% endif %}
+</td>
+                <td>{{ item.get('category') or item.get('type') or '—' }}</td>
+                <td>
+                  <div>{{ item.get('brand') or '—' }}</div>
+                  <div class="text-muted small">{{ item.get('model') or item.get('version') or '—' }}</div>
+                </td>
+                <td>{{ item.get('location') or item.get('department') or '—' }}</td>
+                <td>
+                  {% if status_value in ['ok', 'working', 'active', 'available', 'ready', 'operational'] %}
+                    <span class="badge bg-success">В работе</span>
+                  {% elif status_value in ['maintenance', 'repair', 'warning', 'planned'] %}
+                    <span class="badge bg-warning text-dark">На обслуживании</span>
+                  {% elif status_value in ['critical', 'broken', 'error', 'inactive', 'offline'] %}
+                    <span class="badge bg-danger">Проблема</span>
+                  {% else %}
+                    <span class="badge bg-secondary">{{ status_display }}</span>
+                  {% endif %}
+                </td>
+                <td class="text-end">
+                  <a href="{{ url_for('equipment_detail', equipment_id=item.id if item.id is defined else (item.get('equipment_id') or item.get('id'))) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-eye me-1"></i> Открыть
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="7" class="text-center py-5">
+                <div class="text-muted mb-2"><i class="fas fa-box-open fa-2x"></i></div>
+                <h3 class="h5">Оборудование не найдено</h3>
+                <p class="text-muted mb-0">Попробуйте изменить фильтр или сбросить его, чтобы увидеть все записи.</p>
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

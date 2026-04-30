@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Загрузка PDF — Система поставщиков</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
+            min-height: 100vh;
+        }
+        .upload-hero {
+            background: linear-gradient(135deg, #1d4ed8 0%, #0f766e 100%);
+            color: #fff;
+            border-radius: 1.5rem;
+            overflow: hidden;
+        }
+        .upload-hero .badge {
+            background: rgba(255, 255, 255, 0.18);
+        }
+        .drop-zone {
+            border: 2px dashed #94a3b8;
+            border-radius: 1.25rem;
+            background: #fff;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            min-height: 220px;
+        }
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            border-color: #2563eb;
+            background: #eff6ff;
+            transform: translateY(-1px);
+        }
+        .drop-zone .icon-circle {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .step-card {
+            border: 0;
+            border-radius: 1rem;
+            box-shadow: 0 0.5rem 1rem rgba(15, 23, 42, 0.08);
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-semibold" href="{{ url_for('index') }}">
+            <i class="fa-solid fa-layer-group me-2"></i>Система поставщиков
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Переключить навигацию">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNavbar">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Главная</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Панель</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('audit') }}">Аудит</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('forecast_page') }}">Прогноз</a></li>
+                <li class="nav-item"><a class="nav-link active" href="{{ url_for('upload_pdf') }}">Загрузка PDF</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main class="container py-4 py-lg-5">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-4">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category in ['success', 'warning', 'info', 'danger'] else 'info' }} alert-dismissible fade show shadow-sm" role="alert">
+                        <i class="fa-solid fa-circle-info me-2"></i>{{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <section class="upload-hero p-4 p-lg-5 mb-4 shadow-lg">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+                <span class="badge rounded-pill px-3 py-2 mb-3">PDF · проверка · обработка</span>
+                <h1 class="display-6 fw-bold mb-3">Загрузите PDF-файл для обработки</h1>
+                <p class="lead mb-4">
+                    Перетащите документ в область загрузки или выберите его вручную. После отправки файл будет принят системой и использован для дальнейшей обработки.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span>Поддерживаются только PDF-файлы</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Быстрая отправка без лишних шагов</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-file-signature"></i>
+                        <span>Результат можно использовать сразу</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="bg-white bg-opacity-10 rounded-4 p-4">
+                    <h2 class="h5 fw-semibold mb-3">Что происходит после загрузки</h2>
+                    <ol class="mb-0 ps-3">
+                        <li class="mb-2">Файл принимается системой и проверяется на корректность.</li>
+                        <li class="mb-2">Документ передаётся в модуль обработки.</li>
+                        <li>После успешной загрузки вы получите дальнейшие результаты по сценарию приложения.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card step-card">
+                <div class="card-body p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+                        <div>
+                            <h2 class="h3 mb-2">Загрузка PDF</h2>
+                            <p class="text-muted mb-0">Нажмите на область загрузки или перетащите файл в неё.</p>
+                        </div>
+                        <span class="badge text-bg-primary-subtle text-primary-emphasis rounded-pill px-3 py-2">Только PDF</span>
+                    </div>
+
+<form id="uploadForm" action="{{ url_for('upload_pdf') }}" method="post" enctype="multipart/form-data">
+    <input type="file" id="pdfFile" name="pdf_file" accept=".pdf,application/pdf" class="d-none">
+
+    <div id="dropZone" class="drop-zone p-4 p-md-5 text-center mb-4">
+        <div class="d-flex flex-column align-items-center justify-content-center h-100">
+            <div class="icon-circle d-flex align-items-center justify-content-center mb-3">
+                <i class="fa-solid fa-file-pdf fa-2x"></i>
+            </div>
+            <h3 class="h4 fw-semibold mb-2">Перетащите PDF-файл сюда</h3>
+            <p class="text-muted mb-3">или нажмите кнопку ниже</p>
+            
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                <button type="button" class="btn btn-outline-primary" id="chooseFileBtn">
+                    <i class="fa-solid fa-folder-open me-2"></i>Выбрать PDF
+                </button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <i class="fa-solid fa-cloud-arrow-up me-2"></i>Загрузить файл
+                </button>
+            </div>
+            <p id="fileHint" class="text-muted small mt-3 mb-0">Файл не выбран</p>
+        </div>
+    </div>
+</form>
+
+                        <div class="alert alert-info d-flex align-items-start gap-2 mb-0" role="note">
+                            <i class="fa-solid fa-circle-info mt-1"></i>
+                            <div>
+                                <strong>Подсказка:</strong> убедитесь, что документ открыт и не повреждён. Если файл слишком большой, подождите завершения отправки.
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card step-card mb-4">
+                <div class="card-body p-4">
+                    <h3 class="h5 mb-3"><i class="fa-solid fa-list-ol me-2 text-primary"></i>Как загрузить файл</h3>
+                    <ul class="list-unstyled mb-0">
+                        <li class="d-flex gap-2 mb-3">
+                            <span class="badge text-bg-primary rounded-pill">1</span>
+                            <span>Выберите PDF-документ с помощью кнопки или перетащите его в область загрузки.</span>
+                        </li>
+                        <li class="d-flex gap-2 mb-3">
+                            <span class="badge text-bg-primary rounded-pill">2</span>
+                            <span>Проверьте название файла внизу блока загрузки.</span>
+                        </li>
+                        <li class="d-flex gap-2">
+                            <span class="badge text-bg-primary rounded-pill">3</span>
+                            <span>Нажмите «Загрузить файл» и дождитесь обработки.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card step-card">
+                <div class="card-body p-4">
+                    <h3 class="h5 mb-3"><i class="fa-solid fa-lightbulb me-2 text-warning"></i>Рекомендации</h3>
+                    <ul class="mb-0 ps-3 text-muted">
+                        <li class="mb-2">Используйте только файлы с расширением .pdf.</li>
+                        <li class="mb-2">Переименуйте документ, если в нём есть специальные символы.</li>
+                        <li>Если загрузка не удалась, попробуйте отправить файл ещё раз.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="border-top bg-white">
+    <div class="container py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span class="text-muted small">Система поставщиков · Загрузка PDF</span>
+        <a href="{{ url_for('dashboard') }}" class="small text-decoration-none">Вернуться в панель</a>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const uploadForm = document.getElementById('uploadForm');
+    const dropZone = document.getElementById('dropZone');
+    const pdfFile = document.getElementById('pdfFile');
+    const chooseFileBtn = document.getElementById('chooseFileBtn');
+    const fileHint = document.getElementById('fileHint');
+
+    // Клик по кнопке "Выбрать" вызывает выбор файла
+    chooseFileBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Останавливаем всплытие, чтобы не кликать по dropZone
+        pdfFile.click();
+    });
+
+    // Клик по всей зоне (но не по кнопкам внутри) тоже вызывает выбор
+    dropZone.addEventListener('click', (e) => {
+        if (e.target === dropZone || dropZone.contains(e.target)) {
+            if (e.target.tagName !== 'BUTTON') {
+                pdfFile.click();
+            }
+        }
+    });
+
+    // Отображение имени файла
+    pdfFile.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            fileHint.textContent = `Выбран файл: ${this.files[0].name}`;
+            fileHint.className = 'text-success small mt-3 mb-0 fw-bold';
+        }
+    });
+
+    // Drag & Drop
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) {
+            pdfFile.files = e.dataTransfer.files; // Передаем файлы в инпут
+            fileHint.textContent = `Выбран файл: ${pdfFile.files[0].name}`;
+            fileHint.className = 'text-success small mt-3 mb-0 fw-bold';
+        }
+    });
+</script>
+</body>
+</html>

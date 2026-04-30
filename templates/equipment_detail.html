@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Equipment Details - Industrial Equipment Management{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4 mt-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Equipment</a></li>
+        <li class="breadcrumb-item active">{{ equipment.brand }} {{ equipment.model }}</li>
+    </ol>
+</nav>
+
+<!-- Back Button -->
+<div class="mb-4">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<!-- Main Content -->
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Equipment Details Card -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-info-circle"></i> Equipment Details
+                </h4>
+            </div>
+            
+            <div class="card-body">
+                <!-- Header -->
+                <div class="row mb-4 pb-4 border-bottom">
+                    <div class="col-md-6">
+                        <h1 class="display-6 mb-2">{{ equipment.brand }}</h1>
+                        <p class="lead text-muted">{{ equipment.model }}</p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <div class="mb-3">
+                            {% if equipment.status == 'active' %}
+                                <span class="badge bg-success p-3">
+                                    <i class="fas fa-circle"></i> ACTIVE
+                                </span>
+                            {% elif equipment.status == 'maintenance' %}
+                                <span class="badge bg-warning p-3">
+                                    <i class="fas fa-wrench"></i> MAINTENANCE
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger p-3">
+                                    <i class="fas fa-exclamation-circle"></i> {{ equipment.status|upper }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Key Information Grid -->
+                <div class="row mb-4">
+                    <!-- Category -->
+                    <div class="col-md-6 mb-3">
+                        <div class="info-box">
+                            <h6 class="text-muted text-uppercase small mb-2">
+                                <i class="fas fa-tags"></i> Category
+                            </h6>
+                            <p class="h5">{{ equipment.category }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- ID -->
+                    <div class="col-md-6 mb-3">
+                        <div class="info-box">
+                            <h6 class="text-muted text-uppercase small mb-2">
+                                <i class="fas fa-barcode"></i> Equipment ID
+                            </h6>
+                            <p class="h5">#{{ equipment.id }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="col-md-6 mb-3">
+                        <div class="info-box">
+                            <h6 class="text-muted text-uppercase small mb-2">
+                                <i class="fas fa-power-off"></i> Status
+                            </h6>
+                            <p class="h5">
+                                <span class="badge" style="background-color: 
+                                    {% if equipment.status == 'active' %}#27ae60{% elif equipment.status == 'maintenance' %}#f39c12{% else %}#e74c3c{% endif %}">
+                                    {{ equipment.status|capitalize }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Discontinued -->
+                    <div class="col-md-6 mb-3">
+                        <div class="info-box">
+                            <h6 class="text-muted text-uppercase small mb-2">
+                                <i class="fas fa-archive"></i> Product Status
+                            </h6>
+                            <p class="h5">
+                                {% if equipment.is_discontinued %}
+                                    <span class="badge bg-danger">Discontinued</span>
+                                {% else %}
+                                    <span class="badge bg-success">Available</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Specifications -->
+                <div class="mb-4 p-4 bg-light rounded">
+                    <h6 class="text-uppercase text-muted mb-3">
+                        <i class="fas fa-cog"></i> Technical Specifications
+                    </h6>
+                    <p class="mb-0 lead">
+                        {{ equipment.specs }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Additional Information -->
+        {% if equipment.created_at %}
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">
+                        <i class="fas fa-clock"></i> Record Information
+                    </h6>
+                    <p class="card-text small">
+                        <strong>Created:</strong> 
+                        <code>{{ equipment.created_at }}</code>
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Summary Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-summary"></i> Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-3">
+                        <strong>Brand:</strong><br>
+                        <span class="text-muted">{{ equipment.brand }}</span>
+                    </li>
+                    <li class="mb-3">
+                        <strong>Model:</strong><br>
+                        <span class="text-muted">{{ equipment.model }}</span>
+                    </li>
+                    <li class="mb-3">
+                        <strong>Category:</strong><br>
+                        <a href="{{ url_for('dashboard', category=equipment.category) }}" class="badge bg-primary">
+                            {{ equipment.category }}
+                        </a>
+                    </li>
+                    <li>
+                        <strong>Status:</strong><br>
+                        {% if equipment.status == 'active' %}
+                            <span class="badge bg-success">Active</span>
+                        {% elif equipment.status == 'maintenance' %}
+                            <span class="badge bg-warning">Maintenance</span>
+                        {% else %}
+                            <span class="badge bg-danger">{{ equipment.status|capitalize }}</span>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Specifications Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-list"></i> Quick Stats
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="text-muted small">Type</div>
+                        <div class="h6">{{ equipment.category }}</div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="text-muted small">Availability</div>
+                        <div class="h6">
+                            {% if equipment.is_discontinued %}
+                                <i class="fas fa-times-circle" style="color: #e74c3c;"></i> N/A
+                            {% else %}
+                                <i class="fas fa-check-circle" style="color: #27ae60;"></i> Yes
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="card-title mb-3">
+                    <i class="fas fa-tools"></i> Actions
+                </h6>
+                
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary w-100 mb-2">
+                    <i class="fas fa-list"></i> View All Equipment
+                </a>
+                
+                <a href="{{ url_for('dashboard', category=equipment.category) }}" class="btn btn-outline-primary w-100 mb-2">
+                    <i class="fas fa-filter"></i> Same Category
+                </a>
+                
+                <button type="button" class="btn btn-outline-secondary w-100" onclick="window.print()">
+                    <i class="fas fa-print"></i> Print Details
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .info-box {
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .info-box:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+    }
+    
+    @media print {
+        .navbar, footer, .btn, .breadcrumb {
+            display: none;
+        }
+    }
+</style>
+
+{% endblock %}
